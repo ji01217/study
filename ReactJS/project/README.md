@@ -1,6 +1,6 @@
 # 2nd Toy Project
 
-## 0. 설계
+## 0. 0주차 설계
 
 퍼소나를 나와 같은 '20대 여성'으로 잡고, 내가 평소에 관심있어하고 좋아하는 것들이나 자주 방문하는 사이트들을 생각해보았다.
 
@@ -87,7 +87,9 @@ https://www.thecocktaildb.com/api.php
 
 - 여러 카테고리를 나눠서, 알코올, 논알코올, 칵테일 종류, 칵테일잔 종류에 따라 칵테일을 분류하여 찾아볼 수 있는 필터기능
 
-## 1. 1주차
+
+
+## 1. 1주차 구현 과정
 
 페이지 url 설정
 
@@ -107,37 +109,13 @@ https://www.thecocktaildb.com/api.php
 
 ​		'http://localhost:3000/ingredient/:id'
 
-react js가 업데이트되면서 switch를 지원하지 않는다는 것을 알게되었다.
+react-router-dom가 업데이트되면서 switch를 지원하지 않는다는 것을 알게되었다.
 
-switch -> Routes로 바뀜
-
-```js
-# index.js
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
-
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
-```
-
-```
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-```
-
-
+switch -> Routes로 바뀜 => 헷갈려서 5.3.0으로 다운그레이드해서 코드 작성
 
 ```js
-# app.js
+{/* App. js */}
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './Home';
 
@@ -148,14 +126,14 @@ function App() {
         <Route path="/">
           <Home />
         </Route>
-        <Route path="/browse">
-          <h1>hello</h1>
+        <Route path="/browse/:alphabet">
+          <BrowseAlphabet />
         </Route>
         <Route path="/cocktail/:id">
-
+		  <CocktailPage />
         </Route>
         <Route path="/ingredient/:id">
-
+      	  <IngredientPage />
         </Route>
       </Routes>
     </Router>
@@ -165,7 +143,44 @@ function App() {
 export default App;
 ```
 
-계속 다른페이지가 안떠서 react-router-dom작성을 잘못한건줄 알았는데 주소를 아무것도 작성하지않았을 때의 코드가 가장위에 있으면 안되는 것이었다.
+계속 메인페이지 `<Home>` 이외의 다른 페이지가 뜨지 않아서 router 작성을 잘못한 줄 알았는데 상위 경로의 코드(path = '/')가 가장 위에 있으면 다른 페이지 경로를 다 잡아먹기 때문에 안되는 것이었다. => 가장 밑으로 내려서 해결
+
+link to로 클릭하여 다른 페이지로 넘어갈 수 있도록 코드를 작성하였다. 이때 Link to가 연결된 요소를 클릭했을 때 url은 바뀌는데 페이지가 안 넘어가고 새로고침을 한 번 해야지 넘어가는 현상이 있었다. => 스터디원들에게 물어보니 router 버전 문제라고 하여 router 업데이트를 통해 해결
+
+```js
+{/* App. js */}
+
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
+import Home from './routes/Home';
+import CocktailPage from './routes/CocktailPage';
+import IngredientPage from "./routes/IngredientPage";
+import BrowseAlphabet from "./routes/BrowseAlphabet"
+import { Link } from 'react-router-dom'
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Link to={"/"}><h1>COCKTAIL</h1></Link>
+      <hr />
+      <Routes>
+        <Route path="/browse/:alphabet" element={<BrowseAlphabet />} />
+        <Route path="/cocktail/:id" element={<CocktailPage />} />
+        <Route path="/ingredient/:name" element={<IngredientPage />} />
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+export default App
+```
+
+메인 페이지를 제일 아래에 둬야하는 것이 불편했는데 중간 발표를 통해 exact={true}를 추가하면 path 속성에 넣은 경로값이 정확히 URL의 경로값과 일치할 때만 렌더링되도록 할 수 있다는 것을 배웠다.
+
+또, api 주소를 받아올 때 브라우저에서 주소를 입력하면 json이 뜨는데 react에서는 json형식이 아니라 에러가 발생하였다. 
 
 ```js
   const search = async(event) => {
@@ -175,10 +190,26 @@ export default App;
   }
 ```
 
-api 주소 앞에 http안들어감
+그 원인은 api 주소 앞에 `http://`가 들어가지 않아서 브라우저에서는 자동으로 입력이 되었지만 리액트에서는 안됐던 것이었다.
 
-link to로 클릭하면 url은 바뀌는데 페이지가 안넘어감 => router 업데이트 후 해결
 
-react-router-dom 업데이트
 
-nav바 추가예정
+### 1주차 구현내용
+
+**1. 메인페이지**
+
+![image-20220429222812596](README.assets/image-20220429222812596.png)
+
+**2. 칵테일 상세페이지**
+
+![image-20220429223720470](README.assets/image-20220429223720470-16513304841152.png)
+
+**3. 재료 상세페이지**
+
+![image-20220429224045264](README.assets/image-20220429224045264.png)
+
+
+
+### 1주차 느낀점
+
+중간 발표에서 현재까지 다른 스터디원들의 각자 프로젝트 구현 내용을 들을 수 있었다. 나는 다른 스터디원들과는 다르게 API를 사용하였는데, 너무 많은 기능을 가진 API를 사용하니 스스로 구현한 기능이 매우 적다고 느껴져서 아쉬웠다. 남은 기능인 알파벳으로 칵테일 나열하기를 구현한 후에 css 요소를 좀 더 다양하게 추가하여 멋진 웹사이트를 만들고 싶다!
